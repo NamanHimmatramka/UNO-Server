@@ -37,32 +37,31 @@ module.exports = (io) => {
       const gameId=res.gameId;
       const decodedJwt = JWT.decode(jwt);
       const userId = decodedJwt.sub;
-      socket.emit("error", {msg:"Incorrect ID"})
-      // Game.findById(gameId).then((game) => {
-      //   if (!game) {
-      //     socket.emit("error", {msg:"Incorrect ID"})
-      //   } 
-      //   else if (game.userId2 != null) {
-      //     socket.emit("error", {msg:"Game Full"})
-      //   } 
-      //   else {
-      //     game.userId2 = userId;
-      //     game.jwt2 = jwt
-      //     try {
-      //       game.save().then((game) => {
-      //         // console.log(gameId)
-      //         socket.join(gameId);
-      //         // socket.emit("join-successful",gameId)
-      //         gameplay.startGame(io, gameId, game.jwt1, game.jwt2)
-      //       });
-      //     } catch (err) {
-      //       socket.emit("error", {msg:err})
-      //     }
-      //   }
-      // })
-      // .catch((err)=>{
-      //   socket.emit("error", {msg:"Incorrect Game ID"})
-      // });
+      Game.findById(gameId).then((game) => {
+        if (!game) {
+          socket.emit("error", {msg:"Incorrect ID"})
+        } 
+        else if (game.userId2 != null) {
+          socket.emit("error", {msg:"Game Full"})
+        } 
+        else {
+          game.userId2 = userId;
+          game.jwt2 = jwt
+          try {
+            game.save().then((game) => {
+              // console.log(gameId)
+              socket.join(gameId);
+              // socket.emit("join-successful",gameId)
+              gameplay.startGame(io, gameId, game.jwt1, game.jwt2)
+            });
+          } catch (err) {
+            socket.emit("error", {msg:err})
+          }
+        }
+      })
+      .catch((err)=>{
+        socket.emit("error", {msg:"Incorrect Game ID"})
+      });
     });
 
     socket.on("card-played", (res)=>{
